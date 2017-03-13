@@ -5,6 +5,7 @@
 
 #include "engine/algorithm.hpp"
 #include "util/binary_heap.hpp"
+#include "util/search_heap.hpp"
 #include "util/typedefs.hpp"
 
 namespace osrm
@@ -81,12 +82,7 @@ struct MultiLayerDijkstraHeapData
 
 template <> struct SearchEngineData<routing_algorithms::mld::Algorithm>
 {
-    using QueryHeap = util::BinaryHeap<NodeID,
-                                       NodeID,
-                                       EdgeWeight,
-                                       MultiLayerDijkstraHeapData,
-                                       util::UnorderedMapStorage<NodeID, int>>;
-
+    using QueryHeap = util::SearchHeap<NodeID, EdgeWeight, MultiLayerDijkstraHeapData>;
     using SearchEngineHeapPtr = boost::thread_specific_ptr<QueryHeap>;
 
     static SearchEngineHeapPtr forward_heap_1;
