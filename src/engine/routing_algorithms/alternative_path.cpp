@@ -1,5 +1,6 @@
 #include "engine/routing_algorithms/alternative_path.hpp"
 #include "engine/routing_algorithms/routing_base_ch.hpp"
+#include "engine/routing_algorithms/routing_base_mld.hpp"
 
 #include "util/integer_range.hpp"
 
@@ -7,19 +8,18 @@
 
 #include <algorithm>
 #include <iterator>
+#include <iterator>
 #include <memory>
-#include <unordered_map>
 #include <unordered_set>
-
 #include <vector>
+
+#include <iostream>
 
 namespace osrm
 {
 namespace engine
 {
 namespace routing_algorithms
-{
-namespace ch
 {
 
 namespace
@@ -28,7 +28,7 @@ const double constexpr VIAPATH_ALPHA = 0.10;
 const double constexpr VIAPATH_EPSILON = 0.15; // alternative at most 15% longer
 const double constexpr VIAPATH_GAMMA = 0.75;   // alternative shares at most 75% with the shortest.
 
-using QueryHeap = SearchEngineData<Algorithm>::QueryHeap;
+using QueryHeap = SearchEngineData<ch::Algorithm>::QueryHeap;
 using SearchSpaceEdge = std::pair<NodeID, NodeID>;
 
 struct RankedCandidateNode
@@ -50,14 +50,15 @@ struct RankedCandidateNode
 
 // todo: reorder parameters
 template <bool DIRECTION>
-void alternativeRoutingStep(const datafacade::ContiguousInternalMemoryDataFacade<Algorithm> &facade,
-                            QueryHeap &heap1,
-                            QueryHeap &heap2,
-                            NodeID *middle_node,
-                            EdgeWeight *upper_bound_to_shortest_path_weight,
-                            std::vector<NodeID> &search_space_intersection,
-                            std::vector<SearchSpaceEdge> &search_space,
-                            const EdgeWeight min_edge_offset)
+void alternativeRoutingStep(
+    const datafacade::ContiguousInternalMemoryDataFacade<ch::Algorithm> &facade,
+    QueryHeap &heap1,
+    QueryHeap &heap2,
+    NodeID *middle_node,
+    EdgeWeight *upper_bound_to_shortest_path_weight,
+    std::vector<NodeID> &search_space_intersection,
+    std::vector<SearchSpaceEdge> &search_space,
+    const EdgeWeight min_edge_offset)
 {
     QueryHeap &forward_heap = DIRECTION == FORWARD_DIRECTION ? heap1 : heap2;
     QueryHeap &reverse_heap = DIRECTION == FORWARD_DIRECTION ? heap2 : heap1;
@@ -154,8 +155,8 @@ void retrievePackedAlternatePath(const QueryHeap &forward_heap1,
 // from v and intersecting against queues. only half-searches have to be
 // done at this stage
 void computeLengthAndSharingOfViaPath(
-    SearchEngineData<Algorithm> &engine_working_data,
-    const datafacade::ContiguousInternalMemoryDataFacade<Algorithm> &facade,
+    SearchEngineData<ch::Algorithm> &engine_working_data,
+    const datafacade::ContiguousInternalMemoryDataFacade<ch::Algorithm> &facade,
     const NodeID via_node,
     int *real_length_of_via_path,
     int *sharing_of_via_path,
@@ -319,8 +320,8 @@ void computeLengthAndSharingOfViaPath(
 
 // conduct T-Test
 bool viaNodeCandidatePassesTTest(
-    SearchEngineData<Algorithm> &engine_working_data,
-    const datafacade::ContiguousInternalMemoryDataFacade<Algorithm> &facade,
+    SearchEngineData<ch::Algorithm> &engine_working_data,
+    const datafacade::ContiguousInternalMemoryDataFacade<ch::Algorithm> &facade,
     QueryHeap &existing_forward_heap,
     QueryHeap &existing_reverse_heap,
     QueryHeap &new_forward_heap,
@@ -563,8 +564,8 @@ bool viaNodeCandidatePassesTTest(
 }
 
 InternalRouteResult
-alternativePathSearch(SearchEngineData<Algorithm> &engine_working_data,
-                      const datafacade::ContiguousInternalMemoryDataFacade<Algorithm> &facade,
+alternativePathSearch(SearchEngineData<ch::Algorithm> &engine_working_data,
+                      const datafacade::ContiguousInternalMemoryDataFacade<ch::Algorithm> &facade,
                       const PhantomNodes &phantom_node_pair)
 {
     InternalRouteResult raw_route_data;
@@ -847,7 +848,104 @@ alternativePathSearch(SearchEngineData<Algorithm> &engine_working_data,
     return raw_route_data;
 }
 
-} // namespace ch
+// Alternative Routes for MLD.
+//
+// Start search from s and continue "for a while" when t was found. Save all vertices.
+// Start search from t and continue "for a while" when s was found. Save all vertices.
+// Intersect both vertex sets: these are the candidate vertices.
+// For all candidate vertices c a (potentially arbitrarily bad) alternative route is (s, c, t).
+// Apply heuristic to evaluate alternative route based on stretch, overlap, how reasonable it is.
+//
+// For MLD specifically we can pull off some tricks to make evaluating alternatives fast:
+//   Only consider (s, c, t) with c border vertex: re-use MLD search steps.
+//   Add meta data to border vertices: consider (s, c, t) only when c is e.g. on a highway.
+//   Prune based on vertex cell id
+//
+// https://github.com/Project-OSRM/osrm-backend/issues/3905
+InternalRouteResult
+alternativePathSearch(SearchEngineData<mld::Algorithm> &search_engine_data,
+                      const datafacade::ContiguousInternalMemoryDataFacade<mld::Algorithm> &facade,
+                      const PhantomNodes &phantom_node_pair)
+{
+    search_engine_data.InitializeOrClearFirstThreadLocalStorage(facade.GetNumberOfNodes());
+
+    auto &forward_heap = *search_engine_data.forward_heap_1;
+    auto &reverse_heap = *search_engine_data.reverse_heap_1;
+
+    insertNodesInHeaps(forward_heap, reverse_heap, phantom_node_pair);
+
+    // TODO: use for pruning
+    // const auto &partition = facade.GetMultiLevelPartition();
+    // const auto &cells = facade.GetCellStorage();
+
+    NodeID middle = SPECIAL_NODEID;
+    EdgeWeight weight = INVALID_EDGE_WEIGHT;
+
+    EdgeWeight forward_heap_min = forward_heap.MinKey();
+    EdgeWeight reverse_heap_min = reverse_heap.MinKey();
+
+    // Let forward and reverse search space overlap by a third for searching via candidate nodes.
+    const auto search_space_overlap = 1.66;
+
+    const auto force_loop_forward = needsLoopForward(phantom_node_pair);
+    const auto force_loop_backward = needsLoopBackwards(phantom_node_pair);
+
+    std::vector<NodeID> candidates;
+
+    while (forward_heap.Size() + reverse_heap.Size() > 0 &&
+           forward_heap_min + reverse_heap_min < weight * search_space_overlap)
+    {
+        if (!forward_heap.Empty())
+        {
+            mld::routingStep<FORWARD_DIRECTION>(facade,
+                                                forward_heap,
+                                                reverse_heap,
+                                                middle,
+                                                weight,
+                                                force_loop_forward,
+                                                force_loop_backward,
+                                                phantom_node_pair);
+
+            if (!forward_heap.Empty())
+                forward_heap_min = forward_heap.MinKey();
+        }
+
+        if (!reverse_heap.Empty())
+        {
+            mld::routingStep<REVERSE_DIRECTION>(facade,
+                                                reverse_heap,
+                                                forward_heap,
+                                                middle,
+                                                weight,
+                                                force_loop_forward,
+                                                force_loop_backward,
+                                                phantom_node_pair);
+
+            if (!reverse_heap.Empty())
+                reverse_heap_min = reverse_heap.MinKey();
+        }
+
+        // Search spaces are meeting, these are the potential candidate via nodes
+        if (middle != SPECIAL_NODEID)
+        {
+            candidates.push_back(middle);
+        }
+    }
+
+    std::cout << ">>> number of candidates: " << candidates.size() << std::endl;
+
+    std::sort(begin(candidates), end(candidates));
+    auto it = std::unique(begin(candidates), end(candidates));
+    candidates.erase(it, end(candidates));
+
+    std::cout << ">>> number of unique candidates: " << candidates.size() << std::endl;
+
+    if (weight == INVALID_EDGE_WEIGHT || middle == SPECIAL_NODEID)
+        return {};
+
+    return {};
+}
+
 } // namespace routing_algorithms
 } // namespace engine
 } // namespace osrm}

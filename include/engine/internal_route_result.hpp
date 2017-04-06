@@ -55,8 +55,8 @@ struct InternalRouteResult
     std::vector<bool> target_traversed_in_reverse;
     std::vector<bool> alt_source_traversed_in_reverse;
     std::vector<bool> alt_target_traversed_in_reverse;
-    int shortest_path_length;
-    int alternative_path_length;
+    int shortest_path_length = INVALID_EDGE_WEIGHT;
+    int alternative_path_length = INVALID_EDGE_WEIGHT;
 
     bool is_valid() const { return INVALID_EDGE_WEIGHT != shortest_path_length; }
 
