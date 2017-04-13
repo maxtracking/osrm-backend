@@ -2,39 +2,39 @@ FROM alpine:3.5
 
 ARG DOCKER_TAG
 
-RUN mkdir /src
-COPY . /src
-
 RUN mkdir /opt
 WORKDIR /opt
-RUN NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) && \
-    case ${DOCKER_TAG} in *"-debug"*) BUILD_TYPE="Debug";; *) BUILD_TYPE="Release";; esac && \
-    \
-    echo "@testing http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
+
+RUN echo "@testing http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
     apk update && \
     apk upgrade && \
-    apk add git cmake wget make libc-dev gcc g++ bzip2-dev boost-dev zlib-dev expat-dev lua5.1-dev libtbb@testing libtbb-dev@testing && \
-    \
-    echo "Building libstxxl" && \
+    apk add git cmake wget make libc-dev gcc g++ bzip2-dev boost-dev zlib-dev expat-dev lua5.1-dev libtbb@testing libtbb-dev@testing
+
+RUN echo "Building libstxxl" && \
     cd /opt && \
     git clone --depth 1 --branch 1.4.1 https://github.com/stxxl/stxxl.git && \
     cd stxxl && \
     mkdir build && \
     cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    export NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) && \
     make -j${NPROC} && \
-    make install && \
-    \
-    echo "Building OSRM ${DOCKER_TAG}" && \
+    make install
+
+RUN mkdir /src
+COPY . /src
+
+RUN echo "Building OSRM ${DOCKER_TAG}" && \
+    case ${DOCKER_TAG} in *"-debug"*) export BUILD_TYPE="Debug";; *) export BUILD_TYPE="Release";; esac && \
     cd /src && \
     mkdir build && \
     cd build && \
     cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DENABLE_LTO=On .. && \
     make -j${NPROC} install && \
     cd ../profiles && \
-    cp -r * /opt && \
-    \
-    echo "Cleaning up" && \
+    cp -r * /opt
+
+RUN echo "Cleaning up" && \
     strip /usr/local/bin/* && \
     rm /usr/local/lib/libstxxl* && \
     cd /opt && \
