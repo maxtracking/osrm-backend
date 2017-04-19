@@ -689,8 +689,15 @@ Updater::LoadAndUpdateEdgeExpandedGraph(std::vector<extractor::EdgeBasedEdge> &e
 
     if (update_conditional_turns)
     {
+        Timezoner time_zone_handler;
         // initialize instance of class that handles time zone resolution
-        Timezoner time_zone_handler = Timezoner(config.tz_file_path);
+        if (config.valid_now <= 0)
+        {
+            time_zone_handler = Timezoner(config.tz_file_path);
+        } else {
+            time_zone_handler = Timezoner(config.tz_file_path, config.valid_now);
+        }
+        util::Log() << "Using time " << time_zone_handler.utc_time_now << " to validate conditional restrictions.";
         auto updated_turn_penalties = updateConditionalTurns(config,
                                                              turn_weight_penalties,
                                                              conditional_turns,
