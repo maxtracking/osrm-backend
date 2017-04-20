@@ -209,7 +209,7 @@ RestrictionParser::TryParse(const osmium::Relation &relation) const
     // push back a copy of turn restriction
     parsed_restrictions.push_back(boost::make_optional(restriction_container));
 
-    return std::move(parsed_restrictions);
+    return parsed_restrictions;
 }
 
 bool RestrictionParser::ShouldIgnoreRestriction(const std::string &except_tag_string) const
