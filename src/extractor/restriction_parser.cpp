@@ -196,7 +196,8 @@ RestrictionParser::TryParse(const osmium::Relation &relation) const
                 continue;
             }
 
-            for (auto &p : parsed)
+            // TODO: parse conditional restrictions string directly into OpeningHours type
+            for (const auto &p : parsed)
             {
                 std::vector<util::OpeningHours> parsed = util::ParseOpeningHours(p.condition);
                 if (!parsed.empty())
