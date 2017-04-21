@@ -1,11 +1,11 @@
-#include "updater/csv_source.hpp"
 #include "updater/updater.hpp"
+#include "updater/csv_source.hpp"
 
 #include "extractor/compressed_edge_container.hpp"
 #include "extractor/edge_based_graph_factory.hpp"
 #include "extractor/files.hpp"
-#include "extractor/packed_osm_ids.hpp"
 #include "extractor/node_based_edge.hpp"
+#include "extractor/packed_osm_ids.hpp"
 #include "extractor/restriction.hpp"
 
 #include "storage/io.hpp"
@@ -19,7 +19,6 @@
 #include "util/opening_hours.hpp"
 #include "util/static_graph.hpp"
 #include "util/static_rtree.hpp"
-#include "util/std_hash.hpp"
 #include "util/string_util.hpp"
 #include "util/timing_util.hpp"
 #include "util/typedefs.hpp"
@@ -27,6 +26,7 @@
 #include <boost/assert.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/functional/hash/extensions.hpp>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 
@@ -385,7 +385,8 @@ bool IsRestrictionValid(const Timezoner &tz_handler,
     const auto &condition = turn.condition;
 
     // Get local time of the restriction
-    const auto &local_time = tz_handler.GetLocalTime(point_t{lon, lat});
+    const auto &local_time =
+        tz_handler.GetLocalTime(point_t{static_cast<int>(lon), static_cast<int>(lat)});
 
     // TODO: check restriction type [:<transportation mode>][:<direction>]
     // http://wiki.openstreetmap.org/wiki/Conditional_restrictions#Tagging
@@ -673,10 +674,11 @@ Updater::LoadAndUpdateEdgeExpandedGraph(std::vector<extractor::EdgeBasedEdge> &e
         if (config.valid_now <= 0)
         {
             time_zone_handler = Timezoner(config.tz_file_path);
-        } else {
+        }
+        else
+        {
             time_zone_handler = Timezoner(config.tz_file_path, config.valid_now);
         }
-        util::Log() << "Using time " << time_zone_handler.utc_time_now << " to validate conditional restrictions.";
         auto updated_turn_penalties = updateConditionalTurns(config,
                                                              turn_weight_penalties,
                                                              conditional_turns,

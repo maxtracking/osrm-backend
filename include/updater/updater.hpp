@@ -2,6 +2,7 @@
 #define OSRM_UPDATER_UPDATER_HPP
 
 #include "updater/updater_config.hpp"
+#include "util/log.hpp"
 #include "util/timezones.hpp"
 
 #include "extractor/edge_based_edge.hpp"
@@ -26,9 +27,9 @@ class Timezoner
   public:
     Timezoner() = default;
 
-    Timezoner(std::string tz_filename, std::time_t utc_time_now_)
+    Timezoner(std::string tz_filename, std::time_t utc_time_now)
     {
-        utc_time_now = utc_time_now_;
+        util::Log() << "Time zone validation based on UTC time : " << utc_time_now;
         GetLocalTime = LoadLocalTimesRTree(tz_filename, utc_time_now);
     }
 
@@ -38,11 +39,7 @@ class Timezoner
     {
     }
 
-    std::time_t utc_time_now;
     std::function<struct tm(const point_t &)> GetLocalTime;
-
-  private:
-    unsigned now;
 };
 
 class Updater

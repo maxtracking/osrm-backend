@@ -649,13 +649,15 @@ void ExtractionContainers::WriteRestrictions(const std::string &path)
             if (!restriction_container.restriction.condition.empty())
             {
                 // write conditional turn restrictions to disk, for use in contractor later
-                extractor::serialization::write(restrictions_out_file, restriction_container.restriction);
+                extractor::serialization::write(restrictions_out_file,
+                                                restriction_container.restriction);
                 ++written_restriction_count;
             }
             else
             {
                 // save unconditional turn restriction to memory, for use in ebg later
-                unconditional_turn_restrictions.push_back(std::move(restriction_container.restriction));
+                unconditional_turn_restrictions.push_back(
+                    std::move(restriction_container.restriction));
             }
         }
     }
@@ -682,9 +684,8 @@ void ExtractionContainers::PrepareRestrictions()
         util::UnbufferedLog log;
         log << "Sorting " << restrictions_list.size() << " restriction. by from... ";
         TIMER_START(sort_restrictions);
-        std::sort(restrictions_list.begin(),
-                    restrictions_list.end(),
-                    CmpRestrictionContainerByFrom());
+        std::sort(
+            restrictions_list.begin(), restrictions_list.end(), CmpRestrictionContainerByFrom());
         TIMER_STOP(sort_restrictions);
         log << "ok, after " << TIMER_SEC(sort_restrictions) << "s";
     }
@@ -778,9 +779,8 @@ void ExtractionContainers::PrepareRestrictions()
         util::UnbufferedLog log;
         log << "Sorting restrictions. by to  ... " << std::flush;
         TIMER_START(sort_restrictions_to);
-        std::sort(restrictions_list.begin(),
-                    restrictions_list.end(),
-                    CmpRestrictionContainerByTo());
+        std::sort(
+            restrictions_list.begin(), restrictions_list.end(), CmpRestrictionContainerByTo());
         TIMER_STOP(sort_restrictions_to);
         log << "ok, after " << TIMER_SEC(sort_restrictions_to) << "s";
     }

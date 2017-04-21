@@ -1,13 +1,13 @@
+#include "util/timezones.hpp"
 #include "util/exception.hpp"
 #include "util/log.hpp"
-#include "util/timezones.hpp"
 
 #include <boost/scope_exit.hpp>
 
 #include <shapefil.h>
 
-#include <string>
 #include <chrono>
+#include <string>
 #include <unordered_map>
 
 // Function loads time zone shape polygons, computes a zone local time for utc_time,
