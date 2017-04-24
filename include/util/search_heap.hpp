@@ -20,7 +20,7 @@ template <typename NodeID, typename Weight, typename Data = void> struct SearchH
 
     struct NodeData;
     using DataContainer = std::deque<NodeData>;
-    using DataReference = typename std::add_pointer<typename DataContainer::reference>::type;
+    using DataReference = NodeData *;
     using DataIndex = std::unordered_map<NodeID, DataReference>;
     using HeapData = std::pair<WeightType, DataReference>;
     using HeapContainer = boost::heap::d_ary_heap<HeapData,
