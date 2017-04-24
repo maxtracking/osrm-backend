@@ -4,15 +4,21 @@
 
 #include <boost/scope_exit.hpp>
 
+#ifdef ENABLE_SHAPEFILE
 #include <shapefil.h>
+#endif
 
-#include <chrono>
 #include <string>
 #include <unordered_map>
 
 // Function loads time zone shape polygons, computes a zone local time for utc_time,
 // creates a lookup R-tree and returns a lambda function that maps a point
 // to the corresponding local time
+#ifdef ENABLE_SHAPEFILE
+namespace osrm
+{
+namespace updater
+{
 std::function<struct tm(const point_t &)> LoadLocalTimesRTree(const std::string &tz_shapes_filename,
                                                               std::time_t utc_time)
 {
@@ -112,3 +118,6 @@ std::function<struct tm(const point_t &)> LoadLocalTimesRTree(const std::string 
         return tm{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     };
 }
+}
+}
+#endif

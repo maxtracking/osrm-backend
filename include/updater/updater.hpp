@@ -22,26 +22,6 @@ namespace osrm
 {
 namespace updater
 {
-class Timezoner
-{
-  public:
-    Timezoner() = default;
-
-    Timezoner(std::string tz_filename, std::time_t utc_time_now)
-    {
-        util::Log() << "Time zone validation based on UTC time : " << utc_time_now;
-        GetLocalTime = LoadLocalTimesRTree(tz_filename, utc_time_now);
-    }
-
-    Timezoner(std::string tz_filename)
-        : Timezoner(tz_filename,
-                    std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()))
-    {
-    }
-
-    std::function<struct tm(const point_t &)> GetLocalTime;
-};
-
 class Updater
 {
   public:

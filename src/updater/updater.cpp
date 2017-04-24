@@ -371,45 +371,6 @@ void saveDatasourcesNames(const UpdaterConfig &config)
     extractor::files::writeDatasources(config.datasource_names_path, sources);
 }
 
-bool IsRestrictionValid(const Timezoner &tz_handler,
-                        const extractor::TurnRestriction &turn,
-                        std::vector<util::Coordinate> coordinates,
-                        extractor::PackedOSMIDs osm_node_ids)
-{
-    // get restriction's lon/lat coords
-    const auto via_node = osm_node_ids[turn.via.node];
-    const auto from_node = osm_node_ids[turn.from.node];
-    const auto to_node = osm_node_ids[turn.to.node];
-    const auto &lon = static_cast<double>(toFloating(coordinates[turn.via.node].lon));
-    const auto &lat = static_cast<double>(toFloating(coordinates[turn.via.node].lat));
-    const auto &condition = turn.condition;
-
-    // Get local time of the restriction
-    const auto &local_time =
-        tz_handler.GetLocalTime(point_t{static_cast<int>(lon), static_cast<int>(lat)});
-
-    // TODO: check restriction type [:<transportation mode>][:<direction>]
-    // http://wiki.openstreetmap.org/wiki/Conditional_restrictions#Tagging
-
-    // TODO: parsing will fail for combined conditions, e.g. Sa-Su AND weight>7
-    // http://wiki.openstreetmap.org/wiki/Conditional_restrictions#Combined_conditions:_AND
-
-    if (condition.empty())
-    {
-        osrm::util::Log(logWARNING) << "Condition parsing failed for the turn " << from_node
-                                    << " -> " << via_node << " -> " << to_node;
-        return false;
-    }
-
-    if (osrm::util::CheckOpeningHours(condition, local_time))
-    {
-        return true;
-        // output_stream << restriction.from << "," << restriction.via << "," << restriction.to
-        //              << "," << restriction_value << "\n";
-    }
-    return false;
-}
-
 std::vector<std::uint64_t>
 updateTurnPenalties(const UpdaterConfig &config,
                     const extractor::ProfileProperties &profile_properties,
@@ -464,6 +425,46 @@ updateTurnPenalties(const UpdaterConfig &config,
 
     return updated_turns;
 }
+
+bool IsRestrictionValid(const Timezoner &tz_handler,
+                        const extractor::TurnRestriction &turn,
+                        std::vector<util::Coordinate> coordinates,
+                        extractor::PackedOSMIDs osm_node_ids)
+{
+    // get restriction's lon/lat coords
+    const auto via_node = osm_node_ids[turn.via.node];
+    const auto from_node = osm_node_ids[turn.from.node];
+    const auto to_node = osm_node_ids[turn.to.node];
+    const auto &lon = static_cast<double>(toFloating(coordinates[turn.via.node].lon));
+    const auto &lat = static_cast<double>(toFloating(coordinates[turn.via.node].lat));
+    const auto &condition = turn.condition;
+
+    // Get local time of the restriction
+    const auto &local_time =
+        tz_handler.GetLocalTime(point_t{static_cast<int>(lon), static_cast<int>(lat)});
+
+    // TODO: check restriction type [:<transportation mode>][:<direction>]
+    // http://wiki.openstreetmap.org/wiki/Conditional_restrictions#Tagging
+
+    // TODO: parsing will fail for combined conditions, e.g. Sa-Su AND weight>7
+    // http://wiki.openstreetmap.org/wiki/Conditional_restrictions#Combined_conditions:_AND
+
+    if (condition.empty())
+    {
+        osrm::util::Log(logWARNING) << "Condition parsing failed for the turn " << from_node
+                                    << " -> " << via_node << " -> " << to_node;
+        return false;
+    }
+
+    if (osrm::util::CheckOpeningHours(condition, local_time))
+    {
+        return true;
+        // output_stream << restriction.from << "," << restriction.via << "," << restriction.to
+        //              << "," << restriction_value << "\n";
+    }
+    return false;
+}
+
 std::vector<std::uint64_t>
 updateConditionalTurns(const UpdaterConfig &config,
                        std::vector<TurnPenalty> &turn_weight_penalties,
@@ -667,33 +668,36 @@ Updater::LoadAndUpdateEdgeExpandedGraph(std::vector<extractor::EdgeBasedEdge> &e
             [&turn_data](const std::uint64_t turn_id) { return turn_data.GetGeometryID(turn_id); });
     }
 
-    if (update_conditional_turns)
+    if (SupportsShapefiles())
     {
-        Timezoner time_zone_handler;
-        // initialize instance of class that handles time zone resolution
-        if (config.valid_now <= 0)
+        if (update_conditional_turns)
         {
-            time_zone_handler = Timezoner(config.tz_file_path);
+            Timezoner time_zone_handler;
+            // initialize instance of class that handles time zone resolution
+            if (config.valid_now <= 0)
+            {
+                time_zone_handler = Timezoner(config.tz_file_path);
+            }
+            else
+            {
+                time_zone_handler = Timezoner(config.tz_file_path, config.valid_now);
+            }
+            auto updated_turn_penalties = updateConditionalTurns(config,
+                                                                 turn_weight_penalties,
+                                                                 conditional_turns,
+                                                                 node_coordinates,
+                                                                 osm_node_ids,
+                                                                 time_zone_handler);
+            const auto offset = updated_segments.size();
+            updated_segments.resize(offset + updated_turn_penalties.size());
+            // we need to re-compute all edges that have updated turn penalties.
+            // this marks it for re-computation
+            std::transform(
+                updated_turn_penalties.begin(),
+                updated_turn_penalties.end(),
+                updated_segments.begin() + offset,
+                [&turn_data](const std::uint64_t turn_id) { return turn_data.GetGeometryID(turn_id); });
         }
-        else
-        {
-            time_zone_handler = Timezoner(config.tz_file_path, config.valid_now);
-        }
-        auto updated_turn_penalties = updateConditionalTurns(config,
-                                                             turn_weight_penalties,
-                                                             conditional_turns,
-                                                             node_coordinates,
-                                                             osm_node_ids,
-                                                             time_zone_handler);
-        const auto offset = updated_segments.size();
-        updated_segments.resize(offset + updated_turn_penalties.size());
-        // we need to re-compute all edges that have updated turn penalties.
-        // this marks it for re-computation
-        std::transform(
-            updated_turn_penalties.begin(),
-            updated_turn_penalties.end(),
-            updated_segments.begin() + offset,
-            [&turn_data](const std::uint64_t turn_id) { return turn_data.GetGeometryID(turn_id); });
     }
 
     tbb::parallel_sort(updated_segments.begin(),
