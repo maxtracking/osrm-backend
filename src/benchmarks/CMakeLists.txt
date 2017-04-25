@@ -26,7 +26,8 @@ target_link_libraries(match-bench
 	osrm
 	${BOOST_BASE_LIBRARIES}
 	${CMAKE_THREAD_LIBS_INIT}
-	${TBB_LIBRARIES})
+	${TBB_LIBRARIES}
+	${MAYBE_SHAPEFILE})
 
 add_executable(alias-bench
 	EXCLUDE_FROM_ALL
