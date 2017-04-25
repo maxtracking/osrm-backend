@@ -14,7 +14,8 @@ target_include_directories(rtree-bench
 target_link_libraries(rtree-bench
 	${BOOST_BASE_LIBRARIES}
 	${CMAKE_THREAD_LIBS_INIT}
-	${TBB_LIBRARIES})
+	${TBB_LIBRARIES}
+	${MAYBE_SHAPEFILE})
 
 add_executable(match-bench
 	EXCLUDE_FROM_ALL
