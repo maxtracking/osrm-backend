@@ -496,13 +496,15 @@ std::cout << "]}}," << std::endl;
 
         // open tree file
         storage::io::FileWriter tree_node_file(tree_node_filename,
-                                               storage::io::FileWriter::HasNoFingerprint);
+                                               storage::io::FileWriter::GenerateFingerprint);
 
         std::uint64_t size_of_tree = m_search_tree.size();
         BOOST_ASSERT_MSG(0 < size_of_tree, "tree empty");
 
         tree_node_file.WriteOne(size_of_tree);
         tree_node_file.WriteFrom(&m_search_tree[0], size_of_tree);
+
+        MapLeafNodesFile(leaf_node_filename);
     }
 
     explicit StaticRTree(const boost::filesystem::path &node_file,
