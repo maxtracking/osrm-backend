@@ -640,6 +640,7 @@ set(CUSTOMIZER_LIBRARIES
     ${BOOST_ENGINE_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${TBB_LIBRARIES}
+    ${MAYBE_SHAPEFILE}
     ${MAYBE_RT_LIBRARY}
     ${MAYBE_COVERAGE_LIBRARIES})
 set(UPDATER_LIBRARIES
@@ -649,6 +650,7 @@ set(UPDATER_LIBRARIES
     ${EXPAT_LIBRARIES}
     ${TBB_LIBRARIES}
     ${MAYBE_RT_LIBRARY}
+    ${MAYBE_SHAPEFILE}
     ${MAYBE_COVERAGE_LIBRARIES}
     ${ZLIB_LIBRARY})
 set(CONTRACTOR_LIBRARIES
@@ -657,8 +659,8 @@ set(CONTRACTOR_LIBRARIES
     ${USED_LUA_LIBRARIES}
     ${STXXL_LIBRARY}
     ${TBB_LIBRARIES}
+    ${MAYBE_SHAPEFILE}
     ${MAYBE_RT_LIBRARY}
-    ${UTIL_LIBRARIES}
     ${MAYBE_COVERAGE_LIBRARIES})
 set(ENGINE_LIBRARIES
     ${BOOST_ENGINE_LIBRARIES}
@@ -682,13 +684,13 @@ set(UTIL_LIBRARIES
     ${MAYBE_COVERAGE_LIBRARIES})
 
 # Libraries
-target_link_libraries(osrm ${ENGINE_LIBRARIES} ${UTIL_LIBRARIES})
-target_link_libraries(osrm_update ${UPDATER_LIBRARIES} ${UTIL_LIBRARIES})
+target_link_libraries(osrm ${ENGINE_LIBRARIES})
+target_link_libraries(osrm_update ${UPDATER_LIBRARIES})
 target_link_libraries(osrm_contract ${CONTRACTOR_LIBRARIES} osrm_update)
-target_link_libraries(osrm_extract ${EXTRACTOR_LIBRARIES} ${UTIL_LIBRARIES})
-target_link_libraries(osrm_partition ${PARTITIONER_LIBRARIES} ${UTIL_LIBRARIES})
+target_link_libraries(osrm_extract ${EXTRACTOR_LIBRARIES})
+target_link_libraries(osrm_partition ${PARTITIONER_LIBRARIES})
 target_link_libraries(osrm_customize ${CUSTOMIZER_LIBRARIES} osrm_update)
-target_link_libraries(osrm_store ${STORAGE_LIBRARIES} ${UTIL_LIBRARIES})
+target_link_libraries(osrm_store ${STORAGE_LIBRARIES})
 
 # BUILD_COMPONENTS
 add_executable(osrm-components src/tools/components.cpp $<TARGET_OBJECTS:UTIL>)
