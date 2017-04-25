@@ -7,7 +7,7 @@ Feature: Car - Turn restrictions
         Given the profile "car"
         Given a grid size of 200 meters
 
-    @only_turning
+    @only_turning @conditionals
     Scenario: Car - only_right_turn
         Given the extract extra arguments "--parse-conditional-restrictions=1"
         Given the contract extra arguments "--time-zone-file=world/tz_world.shp"
@@ -35,7 +35,7 @@ Feature: Car - Turn restrictions
             | e    | n  | ej,nj,nj       |
             | e    | p  | ej,nj,nj,jp,jp |
 
-    @no_turning
+    @no_turning @conditionals
     Scenario: Car - No right turn
         Given the extract extra arguments "--parse-conditional-restrictions=1"
         Given the contract extra arguments "--time-zone-file=world/tz_world.shp"
@@ -63,7 +63,7 @@ Feature: Car - Turn restrictions
             | e    | n  | ej,js,js,nj,nj |
             | e    | p  | ej,jp,jp       |
 
-    @no_turning
+    @no_turning @conditionals
     Scenario: Car - Conditional restriction is off
         Given the extract extra arguments "--parse-conditional-restrictions=1"
         Given the contract extra arguments "--time-zone-file=world/tz_world.shp"
