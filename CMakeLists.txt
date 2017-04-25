@@ -700,7 +700,7 @@ install(TARGETS osrm-components DESTINATION bin)
 if(BUILD_TOOLS)
   message(STATUS "Activating OSRM internal tools")
   add_executable(osrm-io-benchmark src/tools/io-benchmark.cpp $<TARGET_OBJECTS:UTIL>)
-  target_link_libraries(osrm-io-benchmark ${BOOST_BASE_LIBRARIES})
+  target_link_libraries(osrm-io-benchmark ${BOOST_BASE_LIBRARIES} ${MAYBE_SHAPEFILE})
 
   install(TARGETS osrm-io-benchmark DESTINATION bin)
 
