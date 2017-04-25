@@ -342,7 +342,7 @@ script:
       npm run nodejs-tests
     fi
   - |
-    if [ -z "${ENABLE_MASON}" ]; then
+    if [ "${ENABLE_MASON}" == "ON" ]; then
       npm run test-conditionals
     fi
   - popd
