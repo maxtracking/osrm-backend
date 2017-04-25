@@ -10,7 +10,7 @@ Feature: Car - Turn restrictions
     @only_turning @conditionals
     Scenario: Car - only_right_turn
         Given the extract extra arguments "--parse-conditional-restrictions=1"
-        Given the contract extra arguments "--time-zone-file=world/tz_world.shp"
+        Given the contract extra arguments "--time-zone-file=test/data/tz_world.shp"
         Given the node map
             """
               n
@@ -38,7 +38,7 @@ Feature: Car - Turn restrictions
     @no_turning @conditionals
     Scenario: Car - No right turn
         Given the extract extra arguments "--parse-conditional-restrictions=1"
-        Given the contract extra arguments "--time-zone-file=world/tz_world.shp"
+        Given the contract extra arguments "--time-zone-file=test/data/tz_world.shp"
         Given the node map
             """
               n
@@ -66,7 +66,7 @@ Feature: Car - Turn restrictions
     @no_turning @conditionals
     Scenario: Car - Conditional restriction is off
         Given the extract extra arguments "--parse-conditional-restrictions=1"
-        Given the contract extra arguments "--time-zone-file=world/tz_world.shp"
+        Given the contract extra arguments "--time-zone-file=test/data/tz_world.shp"
         Given the node map
             """
               n
