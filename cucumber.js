@@ -4,5 +4,5 @@ module.exports = {
     todo: '--strict --tags @todo --require features/support --require features/step_definitions',
     all: '--strict --require features/support --require features/step_definitions',
     mld: '--strict --tags ~@stress --tags ~@todo --tags ~@alternative --tags ~@matrix --tags ~@trip --require features/support --require features/step_definitions -f progress',
-    conditionals: '--strict --tags @conditionals'
+    conditionals: '--strict --tags @conditionals --tags ~@stress --tags ~@todo --require features/support --require features/step_definitions'
 }
