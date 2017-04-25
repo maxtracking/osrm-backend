@@ -36,7 +36,8 @@ add_executable(alias-bench
 target_link_libraries(alias-bench
 	${BOOST_BASE_LIBRARIES}
 	${CMAKE_THREAD_LIBS_INIT}
-	${TBB_LIBRARIES})
+	${TBB_LIBRARIES}
+	${MAYBE_SHAPEFILE})
 
 add_custom_target(benchmarks
 	DEPENDS
