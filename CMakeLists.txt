@@ -450,6 +450,7 @@ if(ENABLE_MASON)
   mason_use(libshp2 VERSION ${MASON_LIBSHP_VERSION})
   set(LIBSHAPEFILE_INCLUDE_DIR ${MASON_PACKAGE_libshp2_INCLUDE_DIRS})
   set(MAYBE_SHAPEFILE ${MASON_PACKAGE_libshp2_LDFLAGS})
+  target_compile_definitions(UTIL PRIVATE COMPILE_DEFINITIONS ENABLE_SHAPEFILE)
 
   if(NOT MASON_PACKAGE_tbb_LIBRARY_DIRS)
     message(FATAL_ERROR "MASON_PACKAGE_tbb_LIBRARY_DIRS is empty, rpath will not work")
@@ -649,8 +650,7 @@ set(UPDATER_LIBRARIES
     ${TBB_LIBRARIES}
     ${MAYBE_RT_LIBRARY}
     ${MAYBE_COVERAGE_LIBRARIES}
-    ${ZLIB_LIBRARY}
-    ${MAYBE_SHAPEFILE})
+    ${ZLIB_LIBRARY})
 set(CONTRACTOR_LIBRARIES
     ${BOOST_BASE_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
@@ -658,6 +658,7 @@ set(CONTRACTOR_LIBRARIES
     ${STXXL_LIBRARY}
     ${TBB_LIBRARIES}
     ${MAYBE_RT_LIBRARY}
+    ${UTIL_LIBRARIES}
     ${MAYBE_COVERAGE_LIBRARIES})
 set(ENGINE_LIBRARIES
     ${BOOST_ENGINE_LIBRARIES}
@@ -677,26 +678,27 @@ set(UTIL_LIBRARIES
     ${CMAKE_THREAD_LIBS_INIT}
     ${STXXL_LIBRARY}
     ${TBB_LIBRARIES}
+    ${MAYBE_SHAPEFILE}
     ${MAYBE_COVERAGE_LIBRARIES})
 
 # Libraries
-target_link_libraries(osrm ${ENGINE_LIBRARIES})
-target_link_libraries(osrm_update ${UPDATER_LIBRARIES})
+target_link_libraries(osrm ${ENGINE_LIBRARIES} ${UTIL_LIBRARIES})
+target_link_libraries(osrm_update ${UPDATER_LIBRARIES} ${UTIL_LIBRARIES})
 target_link_libraries(osrm_contract ${CONTRACTOR_LIBRARIES} osrm_update)
-target_link_libraries(osrm_extract ${EXTRACTOR_LIBRARIES})
-target_link_libraries(osrm_partition ${PARTITIONER_LIBRARIES})
+target_link_libraries(osrm_extract ${EXTRACTOR_LIBRARIES} ${UTIL_LIBRARIES})
+target_link_libraries(osrm_partition ${PARTITIONER_LIBRARIES} ${UTIL_LIBRARIES})
 target_link_libraries(osrm_customize ${CUSTOMIZER_LIBRARIES} osrm_update)
-target_link_libraries(osrm_store ${STORAGE_LIBRARIES})
+target_link_libraries(osrm_store ${STORAGE_LIBRARIES} ${UTIL_LIBRARIES})
 
 # BUILD_COMPONENTS
 add_executable(osrm-components src/tools/components.cpp $<TARGET_OBJECTS:UTIL>)
-target_link_libraries(osrm-components ${TBB_LIBRARIES} ${BOOST_BASE_LIBRARIES} ${MAYBE_SHAPEFILE})
+target_link_libraries(osrm-components ${TBB_LIBRARIES} ${BOOST_BASE_LIBRARIES} ${UTIL_LIBRARIES})
 install(TARGETS osrm-components DESTINATION bin)
 
 if(BUILD_TOOLS)
   message(STATUS "Activating OSRM internal tools")
   add_executable(osrm-io-benchmark src/tools/io-benchmark.cpp $<TARGET_OBJECTS:UTIL>)
-  target_link_libraries(osrm-io-benchmark ${BOOST_BASE_LIBRARIES} ${MAYBE_SHAPEFILE})
+  target_link_libraries(osrm-io-benchmark ${BOOST_BASE_LIBRARIES})
 
   install(TARGETS osrm-io-benchmark DESTINATION bin)
 
@@ -704,7 +706,7 @@ if(BUILD_TOOLS)
     add_executable(osrm-extract-conditionals src/tools/extract-conditionals.cpp $<TARGET_OBJECTS:UTIL>)
     target_include_directories(osrm-extract-conditionals PRIVATE ${LIBSHAPEFILE_INCLUDE_DIR})
     target_link_libraries(osrm-extract-conditionals ${OSMIUM_LIBRARIES} ${BOOST_BASE_LIBRARIES} ${Boost_PROGRAM_OPTIONS_LIBRARY}
-      ${MAYBE_SHAPEFILE} ${BZIP2_LIBRARIES} ${ZLIB_LIBRARY} ${EXPAT_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+        ${UTIL_LIBRARIES} ${BZIP2_LIBRARIES} ${ZLIB_LIBRARY} ${EXPAT_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
     install(TARGETS osrm-extract-conditionals DESTINATION bin)
   endif()
 endif()

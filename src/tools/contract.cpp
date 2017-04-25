@@ -67,16 +67,18 @@ return_code parseArguments(int argc, char *argv[], contractor::ContractorConfig 
 
     if (updater::SupportsShapefiles())
     {
-        config_options.add_options()(
-            "time-zone-file",
-            boost::program_options::value<std::string>(&contractor_config.updater_config.tz_file_path)
-                ->default_value(""),
-            "Required for conditional turn restriction parsing, provide a shp or dbf file containing "
-            "time zone boundaries")(
+        config_options.add_options()("time-zone-file",
+                                     boost::program_options::value<std::string>(
+                                         &contractor_config.updater_config.tz_file_path)
+                                         ->default_value(""),
+                                     "Required for conditional turn restriction parsing, provide a "
+                                     "shp or dbf file containing "
+                                     "time zone boundaries")(
             "parse-conditionals-from-now",
             boost::program_options::value<std::time_t>(&contractor_config.updater_config.valid_now)
                 ->default_value(0),
-            "Optional for conditional turn restriction parsing, provide a UTC time stamp from which "
+            "Optional for conditional turn restriction parsing, provide a UTC time stamp from "
+            "which "
             "to evaluate the validity of conditional turn restrictions");
     }
 

@@ -26,21 +26,14 @@ namespace osrm
 namespace updater
 {
 
-inline bool SupportsShapefiles()
-{
-    #ifdef ENABLE_SHAPEFILE
-        return true;
-    #else
-        return false;
-    #endif
-}
+bool SupportsShapefiles();
 
 class Timezoner
 {
   public:
     Timezoner() = default;
 
-    #ifdef ENABLE_SHAPEFILE
+#ifdef ENABLE_SHAPEFILE
     Timezoner(std::string tz_filename, std::time_t utc_time_now)
     {
         util::Log() << "Time zone validation based on UTC time : " << utc_time_now;
@@ -49,16 +42,13 @@ class Timezoner
 
     Timezoner(std::string tz_filename)
         : Timezoner(tz_filename,
-                    std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())) {
+                    std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()))
+    {
     }
-    #else
-        Timezoner(std::string tz_filename, std::time_t utc_time_now)
-        {
-        }
-        Timezoner(std::string tz_filename)
-        {
-        }
-    #endif
+#else
+    Timezoner(std::string, std::time_t) {}
+    Timezoner(std::string) {}
+#endif
     std::function<struct tm(const point_t &)> GetLocalTime;
 };
 }

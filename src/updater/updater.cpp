@@ -20,13 +20,12 @@
 #include "util/static_graph.hpp"
 #include "util/static_rtree.hpp"
 #include "util/string_util.hpp"
+#include "util/timezones.hpp"
 #include "util/timing_util.hpp"
 #include "util/typedefs.hpp"
 
 #include <boost/assert.hpp>
 #include <boost/filesystem/fstream.hpp>
-#include <boost/functional/hash.hpp>
-#include <boost/functional/hash/extensions.hpp>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 
@@ -46,6 +45,25 @@
 #include <thread>
 #include <tuple>
 #include <vector>
+
+namespace std
+{
+template <typename T1, typename T2, typename T3> struct hash<std::tuple<T1, T2, T3>>
+{
+    size_t operator()(const std::tuple<T1, T2, T3> &t) const
+    {
+        return hash_val(std::get<0>(t), std::get<1>(t), std::get<2>(t));
+    }
+};
+
+template <typename T1, typename T2> struct hash<std::tuple<T1, T2>>
+{
+    size_t operator()(const std::tuple<T1, T2> &t) const
+    {
+        return hash_val(std::get<0>(t), std::get<1>(t));
+    }
+};
+}
 
 namespace osrm
 {
@@ -488,7 +506,7 @@ updateConditionalTurns(const UpdaterConfig &config,
     // TODO make this into a function
     LookupTable<std::tuple<NodeID, NodeID>, NodeID> is_only_lookup;
     std::unordered_set<std::tuple<NodeID, NodeID, NodeID>,
-                       boost::hash<std::tuple<NodeID, NodeID, NodeID>>>
+                       std::hash<std::tuple<NodeID, NodeID, NodeID>>>
         is_no_set;
     for (const auto &c : conditional_turns)
     {
@@ -692,11 +710,12 @@ Updater::LoadAndUpdateEdgeExpandedGraph(std::vector<extractor::EdgeBasedEdge> &e
             updated_segments.resize(offset + updated_turn_penalties.size());
             // we need to re-compute all edges that have updated turn penalties.
             // this marks it for re-computation
-            std::transform(
-                updated_turn_penalties.begin(),
-                updated_turn_penalties.end(),
-                updated_segments.begin() + offset,
-                [&turn_data](const std::uint64_t turn_id) { return turn_data.GetGeometryID(turn_id); });
+            std::transform(updated_turn_penalties.begin(),
+                           updated_turn_penalties.end(),
+                           updated_segments.begin() + offset,
+                           [&turn_data](const std::uint64_t turn_id) {
+                               return turn_data.GetGeometryID(turn_id);
+                           });
         }
     }
 
