@@ -2,15 +2,31 @@
 Feature: Traffic - speeds
 
     Background: Use specific speeds
-        Given the node locations
-          | node |   lat |   lon |
-          | a    |   0.1 |   0.1 |
-          | b    |  0.05 |   0.1 |
-          | c    |   0.0 |   0.1 |
-          | d    |  0.05 |  0.03 |
-          | e    |  0.05 | 0.066 |
-          | f    | 0.075 | 0.066 |
-          | g    | 0.075 |   0.1 |
+        Given the node map
+        """
+                  2a
+                /  |
+              f    |
+           //  \   |
+          //     \g|
+         d--- e -- b
+          \        1
+            \      |
+              \    |
+                \  |
+                  \c
+        """
+
+        And the nodes
+            | node | id |
+            | a    | 1  |
+            | b    | 2  |
+            | c    | 3  |
+            | d    | 4  |
+            | e    | 5  |
+            | f    | 6  |
+            | g    | 7  |
+
         And the ways
           | nodes | highway |
           | ab    | primary |
@@ -41,14 +57,14 @@ Feature: Traffic - speeds
           | annotations | datasources |
 
         When I route I should get
-          | from | to | route       | speed   | weights              | a:datasources |
-          | a    | b  | ad,de,eb,eb | 30 km/h | 1275.7,400.4,378.2,0 | 1:0:0:0       |
-          | a    | c  | ad,dc,dc    | 31 km/h | 1275.7,956.8,0       | 1:0           |
-          | b    | c  | bc,bc       | 27 km/h | 741.5,0              | 1:0           |
-          | a    | d  | ad,ad       | 27 km/h | 1275.7,0             | 1:0           |
-          | d    | c  | dc,dc       | 36 km/h | 956.8,0              | 0             |
-          | g    | b  | fb,fb       | 36 km/h | 164.7,0              | 0             |
-          | a    | g  | ad,df,fb,fb | 30 km/h | 1275.7,487.5,304.7,0 | 1:0:0         |
+          | from | to | route          | speed   | weights           | a:datasources |
+          | a    | b  | ad,de,eb,eb    | 30 km/h | 94.3,25,25,0      | 1:0:0         |
+          | a    | c  | ad,dc,dc       | 31 km/h | 94.3,70.7,0       | 1:0:1         |
+          | b    | c  | bc,bc          | 27 km/h | 66.7,0            | 1             |
+          | a    | d  | ad,ad          | 27 km/h | 94.3,0            | 1             |
+          | d    | c  | dc,dc          | 36 km/h | 70.7,0            | 0:1           |
+          | g    | b  | fb,fb          | 36 km/h | 10.8,0            | 0:0           |
+          | a    | g  | ad,de,eb,fb,fb | 31 km/h | 94.3,25,25,10.8,0 | 1:0:0:0       |
 
 
     Scenario: Weighting based on speed file weights, ETA based on file durations
