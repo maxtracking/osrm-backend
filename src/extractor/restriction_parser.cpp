@@ -185,25 +185,21 @@ RestrictionParser::TryParse(const osmium::Relation &relation) const
         {
             const std::string key(fi_begin->key());
             const std::string value(fi_begin->value());
+
             // Parse condition and add independent value/condition pairs
             const auto &parsed = osrm::util::ParseConditionalRestrictions(value);
 
             if (parsed.empty())
-            {
-                osrm::util::Log(logWARNING) << "Conditional restriction parsing failed for \""
-                                            << fi_begin->value() << "\" at the turn "
-                                            << restriction_container.restriction.from.way << " -> "
-                                            << restriction_container.restriction.via.node << " -> "
-                                            << restriction_container.restriction.to.way;
                 continue;
-            }
 
-            // TODO: parse conditional restrictions string directly into OpeningHours type
             for (const auto &p : parsed)
             {
-                std::vector<util::OpeningHours> parsed = util::ParseOpeningHours(p.condition);
-                if (!parsed.empty())
-                    restriction_container.restriction.condition = std::move(parsed);
+                std::vector<util::OpeningHours> hours = util::ParseOpeningHours(p.condition);
+                // found unrecognized condition, continue
+                if (hours.empty())
+                    return {};
+
+                restriction_container.restriction.condition = std::move(hours);
             }
         }
     }
