@@ -35,7 +35,7 @@ Feature: Car - Destination only, no passing through
         Given the node map
             """
             a       e
-              b c d
+              b2c1d
 
             x       y
             """
@@ -52,11 +52,11 @@ Feature: Car - Destination only, no passing through
             | from | to | route       |
             | a    | b  | ab,ab       |
             | a    | c  | ab,bc       |
-            | a    | d  | ab,cd       |
+            | a    | 1  | ab,cd       |
             | a    | e  | axye,axye   |
             | e    | d  | de,de       |
             | e    | c  | de,cd       |
-            | e    | b  | de,bc       |
+            | e    | 2  | de,bc       |
             | e    | a  | axye,axye   |
 
     Scenario: Car - Routing inside a destination only area
