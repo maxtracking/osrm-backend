@@ -23,6 +23,11 @@ struct TestData
 typedef NodeID TestNodeID;
 typedef int TestWeight;
 typedef boost::mpl::list<int, double> weight_types;
+// TODO
+// typedef boost::mpl::list<ArrayStorage<TestNodeID, TestKey>,
+//                          MapStorage<TestNodeID, TestKey>,
+//                          UnorderedMapStorage<TestNodeID, TestKey>>
+//     storage_types;
 
 template <unsigned NUM_ELEM> struct RandomDataFixture
 {

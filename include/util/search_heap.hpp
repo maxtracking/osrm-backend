@@ -12,7 +12,8 @@ namespace osrm
 namespace util
 {
 
-template <typename NodeID, typename Weight, typename Data = void> struct SearchHeap
+template <typename NodeID, typename Weight, typename Data = void, typename Hash = std::hash<NodeID>>
+struct SearchHeap
 {
 
     using WeightType = Weight;

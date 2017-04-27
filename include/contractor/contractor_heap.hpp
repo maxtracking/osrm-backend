@@ -1,7 +1,7 @@
 #ifndef OSRM_CONTRACTOR_CONTRACTOR_HEAP_HPP_
 #define OSRM_CONTRACTOR_CONTRACTOR_HEAP_HPP_
 
-#include "util/binary_heap.hpp"
+#include "util/search_heap.hpp"
 #include "util/typedefs.hpp"
 #include "util/xor_fast_hash_storage.hpp"
 
@@ -18,11 +18,7 @@ struct ContractorHeapData
     bool target = false;
 };
 
-using ContractorHeap = util::BinaryHeap<NodeID,
-                                        NodeID,
-                                        EdgeWeight,
-                                        ContractorHeapData,
-                                        util::XORFastHashStorage<NodeID, NodeID>>;
+using ContractorHeap = util::SearchHeap<NodeID, EdgeWeight, ContractorHeapData>;
 
 } // namespace contractor
 } // namespace osrm

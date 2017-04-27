@@ -3,7 +3,7 @@
 
 #include "partition/cell_storage.hpp"
 #include "partition/multi_level_partition.hpp"
-#include "util/binary_heap.hpp"
+#include "util/search_heap.hpp"
 
 #include <tbb/enumerable_thread_specific.h>
 
@@ -23,8 +23,7 @@ class CellCustomizer
     };
 
   public:
-    using Heap =
-        util::BinaryHeap<NodeID, NodeID, EdgeWeight, HeapData, util::ArrayStorage<NodeID, int>>;
+    using Heap = util::SearchHeap<NodeID, EdgeWeight, HeapData>;
     using HeapPtr = tbb::enumerable_thread_specific<Heap>;
 
     CellCustomizer(const partition::MultiLevelPartition &partition) : partition(partition) {}

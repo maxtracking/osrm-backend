@@ -4,7 +4,6 @@
 #include <boost/thread/tss.hpp>
 
 #include "engine/algorithm.hpp"
-#include "util/binary_heap.hpp"
 #include "util/search_heap.hpp"
 #include "util/typedefs.hpp"
 
@@ -37,15 +36,10 @@ struct ManyToManyHeapData : HeapData
 
 template <> struct SearchEngineData<routing_algorithms::ch::Algorithm>
 {
-    using QueryHeap = util::
-        BinaryHeap<NodeID, NodeID, EdgeWeight, HeapData, util::UnorderedMapStorage<NodeID, int>>;
+    using QueryHeap = util::SearchHeap<NodeID, EdgeWeight, HeapData>;
     using SearchEngineHeapPtr = boost::thread_specific_ptr<QueryHeap>;
 
-    using ManyToManyQueryHeap = util::BinaryHeap<NodeID,
-                                                 NodeID,
-                                                 EdgeWeight,
-                                                 ManyToManyHeapData,
-                                                 util::UnorderedMapStorage<NodeID, int>>;
+    using ManyToManyQueryHeap = util::SearchHeap<NodeID, EdgeWeight, ManyToManyHeapData>;
 
     using ManyToManyHeapPtr = boost::thread_specific_ptr<ManyToManyQueryHeap>;
 
