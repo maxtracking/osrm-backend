@@ -556,24 +556,21 @@ updateConditionalTurns(const UpdaterConfig &config,
 
 Updater::NumNodesAndEdges Updater::LoadAndUpdateEdgeExpandedGraph() const
 {
-    std::vector<extractor::EdgeBasedEdge> edge_based_edge_list;
     std::vector<EdgeWeight> node_weights;
-    std::vector<util::Coordinate> node_coordinates;
-    extractor::PackedOSMIDs osm_node_ids;
-    auto max_edge_id = Updater::LoadAndUpdateEdgeExpandedGraph(
-        edge_based_edge_list, node_weights, node_coordinates, osm_node_ids);
+    std::vector<extractor::EdgeBasedEdge> edge_based_edge_list;
+    auto max_edge_id = Updater::LoadAndUpdateEdgeExpandedGraph(edge_based_edge_list, node_weights);
     return std::make_tuple(max_edge_id + 1, std::move(edge_based_edge_list));
 }
 
 EdgeID
 Updater::LoadAndUpdateEdgeExpandedGraph(std::vector<extractor::EdgeBasedEdge> &edge_based_edge_list,
-                                        std::vector<EdgeWeight> &node_weights,
-                                        std::vector<util::Coordinate> node_coordinates,
-                                        extractor::PackedOSMIDs osm_node_ids) const
+                                        std::vector<EdgeWeight> &node_weights) const
 {
     TIMER_START(load_edges);
 
     EdgeID max_edge_id = 0;
+    std::vector<util::Coordinate> node_coordinates;
+    extractor::PackedOSMIDs osm_node_ids;
 
     {
         storage::io::FileReader reader(config.edge_based_graph_path,
