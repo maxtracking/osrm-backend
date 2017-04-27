@@ -8,7 +8,7 @@ Feature: Car - Destination only, no passing through
         Given the node map
             """
             a       e
-              b c d
+              b2c1d
 
             x       y
             """
@@ -24,11 +24,11 @@ Feature: Car - Destination only, no passing through
             | from | to | route      |
             | a    | b  | ab,ab      |
             | a    | c  | ab,bcd     |
-            | a    | d  | ab,bcd,bcd |
+            | a    | 1  | ab,bcd,bcd |
             | a    | e  | axye,axye  |
             | e    | d  | de,de      |
             | e    | c  | de,bcd     |
-            | e    | b  | de,bcd,bcd |
+            | e    | 2  | de,bcd,bcd |
             | e    | a  | axye,axye  |
 
     Scenario: Car - Destination only street
