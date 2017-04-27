@@ -117,7 +117,7 @@ Feature: Car - Destination only, no passing through
                    +    \
                    +    |
                    d    |
-                    \___e
+                    1___e
             """
 
         And the ways
@@ -129,5 +129,5 @@ Feature: Car - Destination only, no passing through
         When I route I should get
             | from | to | route         |
             | e    | a  | acbe,acbe     |
-            | d    | a  | de,acbe,acbe  |
+            | 1    | a  | de,acbe,acbe  |
             | c    | d  | cd,cd         |
