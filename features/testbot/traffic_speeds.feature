@@ -146,14 +146,14 @@ Feature: Traffic - speeds
           | annotations | true |
 
         When I route I should get
-          | from | to | route    | speed   | weights       | a:datasources |
-          | a    | b  | fb,fb    | 36 km/h | 329.4,0       | 0             |
-          | a    | c  | fb,bc,bc | 30 km/h | 329.4,741.5,0 | 0:1:0         |
-          | b    | c  | bc,bc    | 27 km/h | 741.5,0       | 1:0           |
-          | a    | d  | fb,df,df | 36 km/h | 140,487.5,0   | 0:0:0         |
-          | d    | c  | dc,dc    | 36 km/h | 956.8,0       | 0             |
-          | g    | b  | fb,fb    | 36 km/h | 164.7,0       | 0             |
-          | a    | g  | fb,fb    | 36 km/h | 164.7,0       | 0             |
+          | from | to | route    | speed   | weights     | a:datasources |
+          | a    | b  | fb,fb    | 36 km/h | 38.3,0      | 0:0           |
+          | a    | c  | fb,bc,bc | 30 km/h | 38.3,66.7,0 | 0:1           |
+          | b    | c  | bc,bc    | 27 km/h | 66.7,0      | 1             |
+          | a    | d  | fb,df,df | 36 km/h | 0.7,39,0    | 0:0           |
+          | d    | c  | dc,dc    | 36 km/h | 70.7,0      | 0:1           |
+          | g    | b  | fb,fb    | 36 km/h | 10.8,0      | 0:0           |
+          | a    | g  | fb,fb    | 36 km/h | 27.5,0      | 0             |
 
 
     Scenario: Verify that negative values cause an error, they're not valid at all
