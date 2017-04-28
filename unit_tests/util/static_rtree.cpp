@@ -40,11 +40,9 @@ constexpr uint32_t TEST_BRANCHING_FACTOR = 8;
 constexpr uint32_t TEST_LEAF_PAGE_SIZE = 64;
 
 using TestData = extractor::EdgeBasedNode;
-using TestStaticRTree = StaticRTree<TestData,
-                                    osrm::storage::Ownership::Container,
-                                    TEST_BRANCHING_FACTOR,
-                                    TEST_LEAF_PAGE_SIZE>;
-using MiniStaticRTree = StaticRTree<TestData, osrm::storage::Ownership::Container, 4, 128>;
+using TestStaticRTree =
+    StaticRTree<TestData, osrm::storage::Ownership::Container, TEST_BRANCHING_FACTOR>;
+using MiniStaticRTree = StaticRTree<TestData, osrm::storage::Ownership::Container, 4>;
 using TestDataFacade = MockDataFacade<osrm::engine::routing_algorithms::ch::Algorithm>;
 
 // Choosen by a fair W20 dice roll (this value is completely arbitrary)
@@ -273,7 +271,7 @@ void construction_test(const std::string &prefix, FixtureT *fixture)
 
 BOOST_FIXTURE_TEST_CASE(construct_tiny, TestRandomGraphFixture_10_30)
 {
-    using TinyTestTree = StaticRTree<TestData, osrm::storage::Ownership::Container, 2, 64>;
+    using TinyTestTree = StaticRTree<TestData, osrm::storage::Ownership::Container, 2>;
     construction_test<TinyTestTree>("test_tiny", this);
 }
 
