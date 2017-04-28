@@ -48,8 +48,6 @@ class RestrictionParser
     TryParse(const osmium::Relation &relation) const;
 
   private:
-    InputRestrictionContainer ParseRelationMembers(bool is_only_restriction,
-                                                   const osmium::Relation &relation) const;
     bool ShouldIgnoreRestriction(const std::string &except_tag_string) const;
 
     bool use_turn_restrictions;
