@@ -446,8 +446,8 @@ updateTurnPenalties(const UpdaterConfig &config,
 
 bool IsRestrictionValid(const Timezoner &tz_handler,
                         const extractor::TurnRestriction &turn,
-                        std::vector<util::Coordinate> coordinates,
-                        extractor::PackedOSMIDs osm_node_ids)
+                        const std::vector<util::Coordinate> &coordinates,
+                        const extractor::PackedOSMIDs &osm_node_ids)
 {
     // get restriction's lon/lat coords
     const auto via_node = osm_node_ids[turn.via.node];
