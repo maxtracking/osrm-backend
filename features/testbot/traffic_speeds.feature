@@ -6,15 +6,15 @@ Feature: Traffic - speeds
         """
                   2a
                 /  |
-              f    |
-           //  \   |
+              f    5
+           //  \   4
           //     \g|
-         d--- e -- b
-          \        1
+         d--- e --1b
+          \        |
             \      |
               \    |
                 \  |
-                  \c
+                  3c
         """
 
         And the nodes
@@ -58,7 +58,7 @@ Feature: Traffic - speeds
 
         When I route I should get
           | from | to | route          | speed   | weights           | a:datasources |
-          | a    | b  | ad,de,eb,eb    | 30 km/h | 94.3,25,25,0      | 1:0:0         |
+          | 2    | 1  | ad,de,eb,eb    | 30 km/h | 89.6,25,20,0      | 1:0:0         |
           | a    | c  | ad,dc,dc       | 31 km/h | 94.3,70.7,0       | 1:0:1         |
           | b    | c  | bc,bc          | 27 km/h | 66.7,0            | 1             |
           | a    | d  | ad,ad          | 27 km/h | 94.3,0            | 1             |
@@ -84,13 +84,13 @@ Feature: Traffic - speeds
 
         When I route I should get
           | from | to | route       | speed   | weights              | a:datasources |
-          | a    | b  | ad,de,eb,eb | 30 km/h | 1275.7,400.4,378.2,0 | 1:0:0:0       |
-          | a    | c  | ad,dc,dc    | 31 km/h | 1275.7,956.8,0       | 1:0           |
-          | b    | c  | bc,bc       | 27 km/h | 741.5,0              | 1:0           |
-          | a    | d  | ad,ad       | 27 km/h | 1275.7,0             | 1:0           |
-          | d    | c  | dc,dc       | 36 km/h | 956.8,0              | 0             |
-          | g    | b  | ab,ab       | 1 km/h  | 10010.4,0            | 1:0           |
-          | a    | g  | ab,ab       | 1 km/h  | 10010.3,0            | 1             |
+          | 2    | 1  | ad,de,eb,eb | 30 km/h | 89.6,25,20,0         | 1:0:0         |
+          | 2    | 3  | ad,dc,dc    | 31 km/h | 89.6,67.2,0          | 1:0           |
+          | b    | c  | bc,bc       | 27 km/h | 66.7,0               | 1             |
+          | a    | d  | ad,ad       | 27 km/h | 94.3,0               | 1             |
+          | d    | c  | dc,dc       | 36 km/h | 70.7,0               | 0:1           |
+          | 4    | 5  | ab,ab       | 1 km/h  | 360,0                | 1             |
+          | 5    | 4  | ab,ab       | 1 km/h  | 360,0                | 1             |
 
 
     Scenario: Weighting based on speed file weights, ETA based on file durations
