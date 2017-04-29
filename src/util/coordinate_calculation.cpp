@@ -34,6 +34,13 @@ std::uint64_t squaredEuclideanDistance(const Coordinate lhs, const Coordinate rh
 
 double haversineDistance(const Coordinate coordinate_1, const Coordinate coordinate_2)
 {
+
+    // Port of the fast haversine approximation approach by Vladimir Agafonkin
+    //    https://github.com/mapbox/cheap-ruler/
+    // Explanation of the approach (and accuracy):
+    //    https://www.mapbox.com/blog/cheap-ruler/
+    // Copyright (c) 2016, Mapbox
+
     auto lon1 = static_cast<int>(coordinate_1.lon);
     auto lat1 = static_cast<int>(coordinate_1.lat);
     auto lon2 = static_cast<int>(coordinate_2.lon);
@@ -52,13 +59,20 @@ double haversineDistance(const Coordinate coordinate_1, const Coordinate coordin
     const double dlat2 = lt2 * detail::DEGREE_TO_RAD;
     const double dlong2 = ln2 * detail::DEGREE_TO_RAD;
 
-    const double dlong = dlong1 - dlong2;
-    const double dlat = dlat1 - dlat2;
+    const auto cos = std::cos(dlat1);
+    const auto cos2 = 2 * cos * cos - 1;
+    const auto cos3 = 2 * cos * cos2 - cos;
+    const auto cos4 = 2 * cos * cos3 - cos2;
+    const auto cos5 = 2 * cos * cos4 - cos3;
 
-    const double aharv = std::pow(std::sin(dlat / 2.0), 2.0) +
-                         std::cos(dlat1) * std::cos(dlat2) * std::pow(std::sin(dlong / 2.), 2);
-    const double charv = 2. * std::atan2(std::sqrt(aharv), std::sqrt(1.0 - aharv));
-    return detail::EARTH_RADIUS * charv;
+    // multipliers for converting longitude and latitude degrees into distance (meters)
+    // (http://1.usa.gov/1Wb1bv7)
+    const auto kx = 1000 * (111.41513 * cos - 0.09455 * cos3 + 0.00012 * cos5);
+    const auto ky = 1000 * (111.13209 - 0.56605 * cos2 + 0.0012 * cos4);
+
+    auto dx = (lon1 - lon2) * kx;
+    auto dy = (lat1 - lat2) * ky;
+    return std::sqrt(dx * dx + dy * dy);
 }
 
 double greatCircleDistance(const Coordinate coordinate_1, const Coordinate coordinate_2)
